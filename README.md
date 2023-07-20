@@ -1,3 +1,3 @@
 # Playground
 
-Personal playground for "throw-away code". Learn by doing.
+Personal playground for "throw-away code". Learning by doing.
