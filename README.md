@@ -1,2 +1,3 @@
-# rust-learning
-Learning Rust by doing Rust book exercises and rustlings
+# Playground
+
+Personal playground for "throw-away code". Learn by doing.
