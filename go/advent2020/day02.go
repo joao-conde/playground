@@ -38,7 +38,7 @@ func countValidPws(validPw policyFn) int {
 		max, _ := strconv.Atoi(splits[1])
 
 		if validPw(char, min, max, password) {
-			valid += 1
+			valid++
 		}
 	}
 
