@@ -20,7 +20,6 @@ func countValidPws(validPw policyFn) int {
 	defer input.Close()
 
 	scanner := bufio.NewScanner(input)
-	scanner.Split(bufio.ScanLines)
 
 	valid := 0
 	for scanner.Scan() {

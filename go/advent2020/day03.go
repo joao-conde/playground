@@ -11,7 +11,6 @@ func main() {
 	defer input.Close()
 
 	scanner := bufio.NewScanner(input)
-	scanner.Split(bufio.ScanLines)
 
 	area := make([]string, 0)
 	for i := 0; scanner.Scan(); i++ {
