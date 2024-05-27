@@ -44,7 +44,7 @@ impl From<InternalError> for ApiError {
 impl Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ApiError::NotFound => write!(f, "Not Found Error"),
+            ApiError::NotFound => write!(f, "Not Found"),
             ApiError::Internal => write!(f, "Internal Server Error"),
         }
     }
