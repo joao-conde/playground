@@ -41,8 +41,7 @@ async fn main() -> std::io::Result<()> {
         .build(SqliteConnectionManager::file("db/todos.db"))
         .unwrap();
 
-    println!("Server listening on {HOST}:{PORT}");
-    HttpServer::new(move || {
+    let app_builder = move || {
         App::new()
             .app_data(web::Data::new(db_pool.clone()))
             .service(list_todos)
@@ -50,8 +49,10 @@ async fn main() -> std::io::Result<()> {
             .service(get_todo)
             .service(update_todo)
             .service(delete_todo)
-    })
-    .bind((HOST, PORT))?
-    .run()
-    .await
+    };
+
+    let server = HttpServer::new(app_builder).bind((HOST, PORT))?;
+
+    println!("Server listening on http://{HOST}:{PORT}");
+    server.run().await
 }

@@ -47,7 +47,7 @@ pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, rusqlite::Error> {
 
 pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, rusqlite::Error> {
     let todo = execute(&pool, move |conn| {
-        conn.prepare("insert into todos (title, description) values (?1, ?2)")
+        conn.prepare("insert into todos (title, description) values (?1, ?2) returning *")
             .unwrap()
             .query_row([todo.title, todo.description], |row| {
                 Ok(Todo {
@@ -79,7 +79,7 @@ pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, rusqlite::Error> {
 
 pub async fn delete_todo(pool: &Pool, id: usize) -> Result<Todo, rusqlite::Error> {
     let todos = execute(&pool, move |conn| {
-        conn.prepare("delete from todos where id = ?1")
+        conn.prepare("delete from todos where id = ?1 returning *")
             .unwrap()
             .query_row([id], |row| {
                 Ok(Todo {
