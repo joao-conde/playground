@@ -25,9 +25,7 @@ impl actix_web::ResponseError for ApiError {
     }
 
     fn error_response(&self) -> HttpResponse<BoxBody> {
-        let status_code = self.status_code();
-        let body = BoxBody::new(self.to_string());
-        HttpResponse::with_body(status_code, body)
+        HttpResponse::build(self.status_code()).body(self.to_string())
     }
 }
 
