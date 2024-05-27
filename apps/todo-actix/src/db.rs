@@ -1,6 +1,8 @@
 use actix_web::web;
 use serde::{Deserialize, Serialize};
 
+use crate::error::ApiError;
+
 pub type Pool = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
 pub type Connection = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
 
@@ -17,18 +19,19 @@ pub struct CreateTodo {
     pub description: String,
 }
 
-async fn execute<T, F>(pool: &Pool, f: F) -> T
+async fn execute<T, F>(pool: &Pool, f: F) -> Result<T, ApiError>
 where
     T: Send + 'static,
     F: Send + 'static,
     F: FnOnce(Connection) -> T,
 {
     let pool = pool.clone();
-    let conn = web::block(move || pool.get()).await.unwrap().unwrap();
-    web::block(move || f(conn)).await.unwrap()
+    let conn = web::block(move || pool.get()).await??;
+    let res = web::block(move || f(conn)).await?;
+    Ok(res)
 }
 
-pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, rusqlite::Error> {
+pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, ApiError> {
     let todos = execute(&pool, |conn| {
         conn.prepare("select * from todos")?
             .query_map([], |row| {
@@ -40,11 +43,11 @@ pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, rusqlite::Error> {
             })
             .and_then(Iterator::collect)
     })
-    .await;
-    todos
+    .await??;
+    Ok(todos)
 }
 
-pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, rusqlite::Error> {
+pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, ApiError> {
     let todo = execute(&pool, move |conn| {
         conn.prepare("insert into todos (title, description) values (?1, ?2) returning *")?
             .query_row([todo.title, todo.description], |row| {
@@ -55,12 +58,12 @@ pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, rusqlite
                 })
             })
     })
-    .await;
-    todo
+    .await??;
+    Ok(todo)
 }
 
-pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, rusqlite::Error> {
-    let todos = execute(&pool, move |conn| {
+pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, ApiError> {
+    let todo = execute(&pool, move |conn| {
         conn.prepare("select * from todos where id = ?1")?
             .query_row([id], |row| {
                 Ok(Todo {
@@ -70,12 +73,12 @@ pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, rusqlite::Error> {
                 })
             })
     })
-    .await;
-    todos
+    .await??;
+    Ok(todo)
 }
 
-pub async fn delete_todo(pool: &Pool, id: usize) -> Result<Todo, rusqlite::Error> {
-    let todos = execute(&pool, move |conn| {
+pub async fn delete_todo(pool: &Pool, id: usize) -> Result<Todo, ApiError> {
+    let todo = execute(&pool, move |conn| {
         conn.prepare("delete from todos where id = ?1 returning *")?
             .query_row([id], |row| {
                 Ok(Todo {
@@ -85,6 +88,6 @@ pub async fn delete_todo(pool: &Pool, id: usize) -> Result<Todo, rusqlite::Error
                 })
             })
     })
-    .await;
-    todos
+    .await??;
+    Ok(todo)
 }

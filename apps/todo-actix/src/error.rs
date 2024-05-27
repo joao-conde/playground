@@ -1,4 +1,4 @@
-use actix_web::{body::BoxBody, http::StatusCode, HttpResponse};
+use actix_web::{body::BoxBody, error::BlockingError, http::StatusCode, HttpResponse};
 use std::fmt::Display;
 
 #[derive(Debug)]
@@ -35,5 +35,17 @@ impl From<rusqlite::Error> for ApiError {
             rusqlite::Error::QueryReturnedNoRows => Self::NotFound,
             _ => Self::Internal,
         }
+    }
+}
+
+impl From<BlockingError> for ApiError {
+    fn from(_: BlockingError) -> Self {
+        Self::Internal
+    }
+}
+
+impl From<r2d2::Error> for ApiError {
+    fn from(_: r2d2::Error) -> Self {
+        Self::Internal
     }
 }
