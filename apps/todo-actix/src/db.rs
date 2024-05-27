@@ -1,7 +1,7 @@
 use actix_web::web;
 use serde::{Deserialize, Serialize};
 
-use crate::error::ApiError;
+use crate::error::InternalError;
 
 pub type Pool = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
 pub type Connection = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
@@ -19,7 +19,7 @@ pub struct CreateTodo {
     pub description: String,
 }
 
-async fn execute<T, F>(pool: &Pool, f: F) -> Result<T, ApiError>
+async fn execute<T, F>(pool: &Pool, f: F) -> Result<T, InternalError>
 where
     T: Send + 'static,
     F: Send + 'static,
@@ -31,7 +31,7 @@ where
     Ok(res)
 }
 
-pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, ApiError> {
+pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, InternalError> {
     let todos = execute(&pool, |conn| {
         conn.prepare("select * from todos")?
             .query_map([], |row| {
@@ -47,7 +47,7 @@ pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, ApiError> {
     Ok(todos)
 }
 
-pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, ApiError> {
+pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, InternalError> {
     let todo = execute(&pool, move |conn| {
         conn.prepare("select * from todos where id = ?1")?
             .query_row([id], |row| {
@@ -62,7 +62,7 @@ pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, ApiError> {
     Ok(todo)
 }
 
-pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, ApiError> {
+pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, InternalError> {
     let todo = execute(&pool, move |conn| {
         conn.prepare("insert into todos (title, description) values (?1, ?2) returning *")?
             .query_row([todo.title, todo.description], |row| {
@@ -77,7 +77,7 @@ pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, ApiError
     Ok(todo)
 }
 
-pub async fn update_todo(pool: &Pool, id: usize, todo: CreateTodo) -> Result<Todo, ApiError> {
+pub async fn update_todo(pool: &Pool, id: usize, todo: CreateTodo) -> Result<Todo, InternalError> {
     let todo = execute(&pool, move |conn| {
         conn.prepare("update todos set title = ?1, description = ?2 where id = ?3 returning *")?
             .query_row([todo.title, todo.description, id.to_string()], |row| {
@@ -92,7 +92,7 @@ pub async fn update_todo(pool: &Pool, id: usize, todo: CreateTodo) -> Result<Tod
     Ok(todo)
 }
 
-pub async fn delete_todo(pool: &Pool, id: usize) -> Result<Todo, ApiError> {
+pub async fn delete_todo(pool: &Pool, id: usize) -> Result<Todo, InternalError> {
     let todo = execute(&pool, move |conn| {
         conn.prepare("delete from todos where id = ?1 returning *")?
             .query_row([id], |row| {

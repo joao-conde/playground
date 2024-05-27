@@ -7,6 +7,21 @@ pub enum ApiError {
     Internal(String),
 }
 
+#[derive(Debug)]
+pub enum InternalError {
+    NotFound,
+    Internal(String),
+}
+
+impl From<InternalError> for ApiError {
+    fn from(err: InternalError) -> Self {
+        match err {
+            InternalError::NotFound => Self::NotFound,
+            InternalError::Internal(msg) => Self::Internal(msg),
+        }
+    }
+}
+
 impl Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -29,7 +44,7 @@ impl actix_web::ResponseError for ApiError {
     }
 }
 
-impl From<rusqlite::Error> for ApiError {
+impl From<rusqlite::Error> for InternalError {
     fn from(err: rusqlite::Error) -> Self {
         match err {
             rusqlite::Error::QueryReturnedNoRows => Self::NotFound,
@@ -38,13 +53,13 @@ impl From<rusqlite::Error> for ApiError {
     }
 }
 
-impl From<BlockingError> for ApiError {
+impl From<BlockingError> for InternalError {
     fn from(err: BlockingError) -> Self {
         Self::Internal(err.to_string())
     }
 }
 
-impl From<r2d2::Error> for ApiError {
+impl From<r2d2::Error> for InternalError {
     fn from(err: r2d2::Error) -> Self {
         Self::Internal(err.to_string())
     }
