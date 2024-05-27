@@ -18,8 +18,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         App::new()
             .app_data(web::Data::new(db_pool.clone()))
             .service(list_todos)
-            .service(create_todo)
             .service(get_todo)
+            .service(create_todo)
             .service(update_todo)
             .service(delete_todo)
     };

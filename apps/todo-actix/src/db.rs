@@ -47,6 +47,21 @@ pub async fn list_todos(pool: &Pool) -> Result<Vec<Todo>, ApiError> {
     Ok(todos)
 }
 
+pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, ApiError> {
+    let todo = execute(&pool, move |conn| {
+        conn.prepare("select * from todos where id = ?1")?
+            .query_row([id], |row| {
+                Ok(Todo {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    description: row.get(2)?,
+                })
+            })
+    })
+    .await??;
+    Ok(todo)
+}
+
 pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, ApiError> {
     let todo = execute(&pool, move |conn| {
         conn.prepare("insert into todos (title, description) values (?1, ?2) returning *")?
@@ -62,10 +77,10 @@ pub async fn create_todo(pool: &Pool, todo: CreateTodo) -> Result<Todo, ApiError
     Ok(todo)
 }
 
-pub async fn get_todo(pool: &Pool, id: usize) -> Result<Todo, ApiError> {
+pub async fn update_todo(pool: &Pool, id: usize, todo: CreateTodo) -> Result<Todo, ApiError> {
     let todo = execute(&pool, move |conn| {
-        conn.prepare("select * from todos where id = ?1")?
-            .query_row([id], |row| {
+        conn.prepare("update todos set title = ?1, description = ?2 where id = ?3 returning *")?
+            .query_row([todo.title, todo.description, id.to_string()], |row| {
                 Ok(Todo {
                     id: row.get(0)?,
                     title: row.get(1)?,
