@@ -1,46 +1,8 @@
-use actix_web::{body::BoxBody, http::StatusCode, web, HttpResponse};
+use actix_web::web;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
 
 pub type Pool = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
 pub type Connection = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
-
-#[derive(Debug)]
-pub enum ApiError {
-    NotFound,
-    Internal,
-}
-
-impl Display for ApiError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ApiError::NotFound => write!(f, "Not Found Error"),
-            ApiError::Internal => write!(f, "Internal Server Error"),
-        }
-    }
-}
-
-impl actix_web::ResponseError for ApiError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            ApiError::NotFound => StatusCode::NOT_FOUND,
-            ApiError::Internal => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-
-    fn error_response(&self) -> HttpResponse<BoxBody> {
-        HttpResponse::new(self.status_code())
-    }
-}
-
-impl From<rusqlite::Error> for ApiError {
-    fn from(value: rusqlite::Error) -> Self {
-        match value {
-            rusqlite::Error::QueryReturnedNoRows => Self::NotFound,
-            _ => Self::Internal,
-        }
-    }
-}
 
 #[derive(Deserialize, Serialize)]
 pub struct Todo {
