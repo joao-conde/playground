@@ -52,8 +52,39 @@ mod test {
     use actix_web::{http::StatusCode, test, App};
     use sqlx::SqlitePool;
 
-    #[sqlx::test]
+    #[sqlx::test(fixtures("todos"))]
     async fn list_todos(pool: SqlitePool) {
+        let app = App::new().configure(|config| configure_app(config, pool));
+        let app = test::init_service(app).await;
+        let request = test::TestRequest::default().uri("/todos").to_request();
+        let response = test::call_service(&app, request).await;
+        let status_code = response.status();
+        let body = response.into_body().to_string().await;
+        assert_eq!(
+            body,
+            r#"[
+                {
+                    "id": 1,
+                    "title": "TODO API",
+                    "description": "Build a TODO API with Actix Web and SQLX"
+                },
+                {
+                    "id": 2,
+                    "title": "Fix home printer",
+                    "description": "Fix the home printer ASAP because my college degree ain't paying itself"
+                },
+                {
+                    "id": 3,
+                    "title": "Update CV",
+                    "description": "Update CV ASAP to send to that dream Rust job"
+                }
+            ]"#
+        );
+        assert_eq!(status_code, StatusCode::OK);
+    }
+
+    #[sqlx::test]
+    async fn list_todos_empty(pool: SqlitePool) {
         let app = App::new().configure(|config| configure_app(config, pool));
         let app = test::init_service(app).await;
         let request = test::TestRequest::default().uri("/todos").to_request();

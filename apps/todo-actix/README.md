@@ -15,7 +15,7 @@ cargo run --release
 - Metrics
 - Alerts
 - unit tests
-- integration (db) tests
+- integration (db) tests: NOT COMPARE STRINGS; PARSE TO OBJECTS
 
 ## References
 

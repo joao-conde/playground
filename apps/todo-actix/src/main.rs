@@ -21,7 +21,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .wrap(logger)
             .configure(|config| configure_app(config, db_pool.clone()))
     };
-
     let server = HttpServer::new(app_builder).bind((HOST, PORT))?;
 
     info!("Listening on http://{HOST}:{PORT}");
