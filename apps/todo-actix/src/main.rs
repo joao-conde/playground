@@ -16,6 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let db_url = env::var("DATABASE_URL")?;
     let db_pool = SqlitePool::connect(&db_url).await?;
+    sqlx::migrate!("./migrations").run(&db_pool).await?;
 
     let app_builder = move || {
         let logger = Logger::default();
