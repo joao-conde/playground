@@ -74,17 +74,14 @@ pub async fn delete_todo(pool: &SqlitePool, id: i64) -> Result<Todo, InternalErr
 
 #[cfg(test)]
 mod test {
-    use super::*;
-
-    #[sqlx::test]
-    async fn list_todos_empty(pool: SqlitePool) {
-        let todos = list_todos(&pool).await.unwrap();
-        assert_eq!(todos, vec![]);
-    }
+    use super::{CreateTodo, Todo, UpdateTodo};
+    use crate::error::InternalError;
+    use assert_matches::assert_matches;
+    use sqlx::SqlitePool;
 
     #[sqlx::test(fixtures("todos"))]
-    async fn list_all_todos(pool: SqlitePool) {
-        let todos = list_todos(&pool).await.unwrap();
+    async fn list_todos(pool: SqlitePool) {
+        let todos = super::list_todos(&pool).await.unwrap();
         assert_eq!(
             todos,
             vec![
@@ -107,5 +104,157 @@ mod test {
                 }
             ]
         );
+    }
+
+    #[sqlx::test]
+    async fn list_todos_empty(pool: SqlitePool) {
+        let todos = super::list_todos(&pool).await.unwrap();
+        assert_eq!(todos, vec![]);
+    }
+
+    #[sqlx::test(fixtures("todos"))]
+    async fn get_todo(pool: SqlitePool) {
+        let todo = super::get_todo(&pool, 2).await.unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 2,
+                title: "Fix home printer".to_string(),
+                description:
+                    "Fix the home printer ASAP because my college degree ain't paying itself"
+                        .to_string()
+            },
+        );
+    }
+
+    #[sqlx::test]
+    async fn get_todo_not_found(pool: SqlitePool) {
+        let err = super::get_todo(&pool, -1).await;
+        assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
+    }
+
+    #[sqlx::test]
+    async fn create_todo(pool: SqlitePool) {
+        let todo = super::create_todo(
+            &pool,
+            CreateTodo {
+                title: "title".to_string(),
+                description: "description".to_string(),
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 1,
+                title: "title".to_string(),
+                description: "description".to_string(),
+            }
+        );
+
+        let todo = super::get_todo(&pool, 1).await.unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 1,
+                title: "title".to_string(),
+                description: "description".to_string(),
+            }
+        );
+    }
+
+    #[sqlx::test(fixtures("todos"))]
+    async fn update_todo(pool: SqlitePool) {
+        let todo = super::get_todo(&pool, 2).await.unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 2,
+                title: "Fix home printer".to_string(),
+                description:
+                    "Fix the home printer ASAP because my college degree ain't paying itself"
+                        .to_string()
+            },
+        );
+
+        let todo = super::update_todo(
+            &pool,
+            2,
+            UpdateTodo {
+                title: "title".to_string(),
+                description: "description".to_string(),
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 2,
+                title: "title".to_string(),
+                description: "description".to_string(),
+            }
+        );
+
+        let todo = super::get_todo(&pool, 2).await.unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 2,
+                title: "title".to_string(),
+                description: "description".to_string(),
+            },
+        );
+    }
+
+    #[sqlx::test]
+    async fn update_todo_not_found(pool: SqlitePool) {
+        let err = super::update_todo(
+            &pool,
+            -1,
+            UpdateTodo {
+                title: "title".to_string(),
+                description: "description".to_string(),
+            },
+        )
+        .await;
+        assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
+    }
+
+    #[sqlx::test(fixtures("todos"))]
+    async fn delete_todo(pool: SqlitePool) {
+        let todo = super::get_todo(&pool, 2).await.unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 2,
+                title: "Fix home printer".to_string(),
+                description:
+                    "Fix the home printer ASAP because my college degree ain't paying itself"
+                        .to_string()
+            },
+        );
+
+        let todo = super::delete_todo(&pool, 2).await.unwrap();
+        assert_eq!(
+            todo,
+            Todo {
+                id: 2,
+                title: "Fix home printer".to_string(),
+                description:
+                    "Fix the home printer ASAP because my college degree ain't paying itself"
+                        .to_string()
+            },
+        );
+
+        let err = super::get_todo(&pool, 2).await;
+        assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
+    }
+
+    #[sqlx::test]
+    async fn delete_todo_not_found(pool: SqlitePool) {
+        let err = super::delete_todo(&pool, -1).await;
+        assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
     }
 }
