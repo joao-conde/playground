@@ -81,4 +81,31 @@ mod test {
         let todos = list_todos(&pool).await.unwrap();
         assert_eq!(todos, vec![]);
     }
+
+    #[sqlx::test(fixtures("todos"))]
+    async fn list_all_todos(pool: SqlitePool) {
+        let todos = list_todos(&pool).await.unwrap();
+        assert_eq!(
+            todos,
+            vec![
+                Todo {
+                    id: 1,
+                    title: "TODO API".to_string(),
+                    description: "Build a TODO API with Actix Web and SQLX".to_string()
+                },
+                Todo {
+                    id: 2,
+                    title: "Fix home printer".to_string(),
+                    description:
+                        "Fix the home printer ASAP because my college degree ain't paying itself"
+                            .to_string()
+                },
+                Todo {
+                    id: 3,
+                    title: "Update CV".to_string(),
+                    description: "Update CV ASAP to send to that dream Rust job".to_string()
+                }
+            ]
+        );
+    }
 }
