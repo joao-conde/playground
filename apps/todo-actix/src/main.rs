@@ -1,8 +1,7 @@
-use std::env;
-
-use actix_web::{middleware::Logger, web, App, HttpServer};
+use actix_web::{middleware::Logger, web::Data, App, HttpServer};
 use log::info;
 use sqlx::SqlitePool;
+use std::env;
 use todo_actix::{
     routes::{create_todo, delete_todo, get_todo, list_todos, update_todo},
     AppData,
@@ -20,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app_builder = move || {
         let logger = Logger::default();
-        let app_data = web::Data::new(AppData {
+        let app_data = Data::new(AppData {
             db_pool: db_pool.clone(),
         });
         App::new()

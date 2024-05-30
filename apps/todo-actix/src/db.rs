@@ -2,15 +2,21 @@ use crate::error::InternalError;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, SqlitePool};
 
-#[derive(Deserialize, Serialize, FromRow)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize, FromRow)]
 pub struct Todo {
     pub id: i64,
     pub title: String,
     pub description: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize)]
 pub struct CreateTodo {
+    pub title: String,
+    pub description: String,
+}
+
+#[derive(Debug, PartialEq, Eq, Deserialize)]
+pub struct UpdateTodo {
     pub title: String,
     pub description: String,
 }
@@ -44,7 +50,7 @@ pub async fn create_todo(pool: &SqlitePool, todo: CreateTodo) -> Result<Todo, In
 pub async fn update_todo(
     pool: &SqlitePool,
     id: i64,
-    todo: CreateTodo,
+    todo: UpdateTodo,
 ) -> Result<Todo, InternalError> {
     sqlx::query_as!(
         Todo,
@@ -64,4 +70,15 @@ pub async fn delete_todo(pool: &SqlitePool, id: i64) -> Result<Todo, InternalErr
         .fetch_one(pool)
         .await?;
     Ok(todo)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[sqlx::test]
+    async fn list_todos_empty(pool: SqlitePool) {
+        let todos = list_todos(&pool).await.unwrap();
+        assert_eq!(todos, vec![]);
+    }
 }
