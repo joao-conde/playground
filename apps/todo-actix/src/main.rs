@@ -1,24 +1,31 @@
+use std::env;
+
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use log::info;
-use r2d2_sqlite::SqliteConnectionManager;
-use todo_actix::routes::{create_todo, delete_todo, get_todo, list_todos, update_todo};
+use sqlx::SqlitePool;
+use todo_actix::{
+    routes::{create_todo, delete_todo, get_todo, list_todos, update_todo},
+    AppData,
+};
 
 const HOST: &str = "127.0.0.1";
 const PORT: u16 = 8080;
-const DB_URL: &str = "db/todos.db";
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    let db_pool = r2d2::Pool::builder().build(SqliteConnectionManager::file(DB_URL))?;
+    let db_url = env::var("DATABASE_URL")?;
+    let db_pool = SqlitePool::connect(&db_url).await?;
 
     let app_builder = move || {
-        let db_pool = web::Data::new(db_pool.clone());
         let logger = Logger::default();
+        let app_data = web::Data::new(AppData {
+            db_pool: db_pool.clone(),
+        });
         App::new()
-            .app_data(db_pool)
             .wrap(logger)
+            .app_data(app_data)
             .service(list_todos)
             .service(get_todo)
             .service(create_todo)

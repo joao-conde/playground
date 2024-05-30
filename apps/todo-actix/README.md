@@ -14,4 +14,11 @@ cargo run --release
 - Caching
 - Metrics
 - Alerts
+- unit tests
+- integration (db) tests
+
+## References
+
+https://github.com/launchbadge/sqlx/tree/main/examples/sqlite/todos
+https://github.com/wpcodevo/rust-mysql-crud-sqlx/tree/master
   

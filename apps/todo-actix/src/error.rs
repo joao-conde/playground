@@ -1,28 +1,14 @@
-use actix_web::{body::BoxBody, error::BlockingError, http::StatusCode, HttpResponse};
+use actix_web::{body::BoxBody, http::StatusCode, HttpResponse};
 use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum InternalError {
-    Sql(rusqlite::Error),
-    ConnectionPool(r2d2::Error),
-    Actix(actix_web::Error),
+    Sql(sqlx::Error),
 }
 
-impl From<rusqlite::Error> for InternalError {
-    fn from(err: rusqlite::Error) -> Self {
+impl From<sqlx::Error> for InternalError {
+    fn from(err: sqlx::Error) -> Self {
         Self::Sql(err)
-    }
-}
-
-impl From<BlockingError> for InternalError {
-    fn from(err: BlockingError) -> Self {
-        Self::Actix(err.into())
-    }
-}
-
-impl From<r2d2::Error> for InternalError {
-    fn from(err: r2d2::Error) -> Self {
-        Self::ConnectionPool(err)
     }
 }
 
@@ -35,7 +21,7 @@ pub enum ApiError {
 impl From<InternalError> for ApiError {
     fn from(err: InternalError) -> Self {
         match err {
-            InternalError::Sql(rusqlite::Error::QueryReturnedNoRows) => Self::NotFound,
+            InternalError::Sql(sqlx::Error::RowNotFound) => Self::NotFound,
             _ => Self::Internal,
         }
     }
