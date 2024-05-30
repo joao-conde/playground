@@ -1,11 +1,8 @@
-use actix_web::{middleware::Logger, web::Data, App, HttpServer};
+use actix_web::{middleware::Logger, App, HttpServer};
 use log::info;
 use sqlx::SqlitePool;
 use std::env;
-use todo_actix::{
-    routes::{create_todo, delete_todo, get_todo, list_todos, update_todo},
-    AppData,
-};
+use todo_actix::app::configure_app;
 
 const HOST: &str = "127.0.0.1";
 const PORT: u16 = 8080;
@@ -20,17 +17,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app_builder = move || {
         let logger = Logger::default();
-        let app_data = Data::new(AppData {
-            db_pool: db_pool.clone(),
-        });
         App::new()
             .wrap(logger)
-            .app_data(app_data)
-            .service(list_todos)
-            .service(get_todo)
-            .service(create_todo)
-            .service(update_todo)
-            .service(delete_todo)
+            .configure(|config| configure_app(config, db_pool.clone()))
     };
 
     let server = HttpServer::new(app_builder).bind((HOST, PORT))?;

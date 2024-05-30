@@ -1,10 +1,8 @@
-pub mod routes;
+pub mod app;
 
 mod db;
 mod error;
+mod routes;
 
-use sqlx::SqlitePool;
-
-pub struct AppData {
-    pub db_pool: SqlitePool,
-}
+#[cfg(test)]
+mod test;
