@@ -48,39 +48,42 @@ async fn delete_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpRespo
 
 #[cfg(test)]
 mod test {
-    use crate::{app::configure_app, test::BoxBodyTest};
+    use crate::{app::configure_app, db::Todo, test::utils::BoxBodyTest};
     use actix_web::{http::StatusCode, test, App};
     use sqlx::SqlitePool;
 
-    #[sqlx::test(fixtures("todos"))]
+    #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn list_todos(pool: SqlitePool) {
         let app = App::new().configure(|config| configure_app(config, pool));
         let app = test::init_service(app).await;
         let request = test::TestRequest::default().uri("/todos").to_request();
         let response = test::call_service(&app, request).await;
+
         let status_code = response.status();
-        let body = response.into_body().to_string().await;
+        let body: Vec<Todo> = response.into_body().deserialize().await;
+        assert_eq!(status_code, StatusCode::OK);
         assert_eq!(
             body,
-            r#"[
-                {
-                    "id": 1,
-                    "title": "TODO API",
-                    "description": "Build a TODO API with Actix Web and SQLX"
+            vec![
+                Todo {
+                    id: 1,
+                    title: "TODO API".to_string(),
+                    description: "Build a TODO API with Actix Web and SQLX".to_string()
                 },
-                {
-                    "id": 2,
-                    "title": "Fix home printer",
-                    "description": "Fix the home printer ASAP because my college degree ain't paying itself"
+                Todo {
+                    id: 2,
+                    title: "Fix home printer".to_string(),
+                    description:
+                        "Fix the home printer ASAP because my college degree ain't paying itself"
+                            .to_string()
                 },
-                {
-                    "id": 3,
-                    "title": "Update CV",
-                    "description": "Update CV ASAP to send to that dream Rust job"
+                Todo {
+                    id: 3,
+                    title: "Update CV".to_string(),
+                    description: "Update CV ASAP to send to that dream Rust job".to_string()
                 }
-            ]"#
+            ]
         );
-        assert_eq!(status_code, StatusCode::OK);
     }
 
     #[sqlx::test]
@@ -89,9 +92,10 @@ mod test {
         let app = test::init_service(app).await;
         let request = test::TestRequest::default().uri("/todos").to_request();
         let response = test::call_service(&app, request).await;
+
         let status_code = response.status();
-        let body = response.into_body().to_string().await;
-        assert_eq!(body, "[]");
+        let body: Vec<Todo> = response.into_body().deserialize().await;
         assert_eq!(status_code, StatusCode::OK);
+        assert_eq!(body, vec![]);
     }
 }

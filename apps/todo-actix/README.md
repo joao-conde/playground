@@ -16,6 +16,7 @@ cargo run --release
 - Alerts
 - unit tests
 - integration (db) tests: NOT COMPARE STRINGS; PARSE TO OBJECTS
+- use anyhow errors
 
 ## References
 

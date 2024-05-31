@@ -79,7 +79,7 @@ mod test {
     use assert_matches::assert_matches;
     use sqlx::SqlitePool;
 
-    #[sqlx::test(fixtures("todos"))]
+    #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn list_todos(pool: SqlitePool) {
         let todos = super::list_todos(&pool).await.unwrap();
         assert_eq!(
@@ -112,7 +112,7 @@ mod test {
         assert_eq!(todos, vec![]);
     }
 
-    #[sqlx::test(fixtures("todos"))]
+    #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn get_todo(pool: SqlitePool) {
         let todo = super::get_todo(&pool, 2).await.unwrap();
         assert_eq!(
@@ -164,7 +164,7 @@ mod test {
         );
     }
 
-    #[sqlx::test(fixtures("todos"))]
+    #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn update_todo(pool: SqlitePool) {
         let todo = super::get_todo(&pool, 2).await.unwrap();
         assert_eq!(
@@ -222,7 +222,7 @@ mod test {
         assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
     }
 
-    #[sqlx::test(fixtures("todos"))]
+    #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn delete_todo(pool: SqlitePool) {
         let todo = super::get_todo(&pool, 2).await.unwrap();
         assert_eq!(
