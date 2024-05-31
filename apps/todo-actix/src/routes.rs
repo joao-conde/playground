@@ -67,20 +67,18 @@ mod test {
             vec![
                 Todo {
                     id: 1,
-                    title: "TODO API".to_string(),
-                    description: "Build a TODO API with Actix Web and SQLX".to_string()
+                    title: "todo1".to_string(),
+                    description: "description1".to_string()
                 },
                 Todo {
                     id: 2,
-                    title: "Fix home printer".to_string(),
-                    description:
-                        "Fix the home printer ASAP because my college degree ain't paying itself"
-                            .to_string()
+                    title: "todo2".to_string(),
+                    description: "description2".to_string()
                 },
                 Todo {
                     id: 3,
-                    title: "Update CV".to_string(),
-                    description: "Update CV ASAP to send to that dream Rust job".to_string()
+                    title: "todo3".to_string(),
+                    description: "description3".to_string()
                 }
             ]
         );
