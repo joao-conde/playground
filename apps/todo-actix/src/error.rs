@@ -1,21 +1,22 @@
 use actix_web::{body::BoxBody, http::StatusCode, HttpResponse};
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum InternalError {
-    Sql(sqlx::Error),
+    #[error("Invalid config value")]
+    ParseConfig(String),
+
+    #[error("SQL error")]
+    Sql(#[from] sqlx::Error),
 }
 
-impl From<sqlx::Error> for InternalError {
-    fn from(err: sqlx::Error) -> Self {
-        Self::Sql(err)
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Error, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum ApiError {
+    #[error("Not Found")]
     NotFound,
+
+    #[error("Internal Server Error")]
     Internal,
 }
 
@@ -24,15 +25,6 @@ impl From<InternalError> for ApiError {
         match err {
             InternalError::Sql(sqlx::Error::RowNotFound) => Self::NotFound,
             _ => Self::Internal,
-        }
-    }
-}
-
-impl Display for ApiError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ApiError::NotFound => write!(f, "Not Found"),
-            ApiError::Internal => write!(f, "Internal Server Error"),
         }
     }
 }
