@@ -9,22 +9,11 @@ use actix_web::{
     web::{Data, Json, Path},
     HttpResponse,
 };
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
-pub struct ApiResponse<T> {
-    pub result: T,
-    pub errors: Vec<ApiError>,
-}
 
 #[get("/todos")]
 async fn list_todos(app_data: Data<AppData>) -> Result<HttpResponse, ApiError> {
     let todos = db::list_todos(&app_data.db_pool).await?;
-    let response = ApiResponse {
-        result: todos,
-        errors: vec![],
-    };
-    Ok(HttpResponse::Ok().json(response))
+    Ok(HttpResponse::Ok().json(todos))
 }
 
 #[get("/todos/{id}")]
@@ -61,7 +50,6 @@ async fn delete_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpRespo
 #[cfg(test)]
 mod test {
     use crate::{
-        routes::ApiResponse,
         test::{make_request, BoxBodyTest},
         todo::Todo,
     };
@@ -104,9 +92,9 @@ mod test {
         let response = make_request(pool, request).await;
 
         let status_code = response.status();
-        let body: ApiResponse<Vec<Todo>> = response.into_body().deserialize().await;
+        let body: Vec<Todo> = response.into_body().deserialize().await;
         assert_eq!(status_code, StatusCode::OK);
-        assert_eq!(body.result, vec![]);
+        assert_eq!(body, vec![]);
     }
 
     #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
@@ -115,10 +103,10 @@ mod test {
         let response = make_request(pool, request).await;
 
         let status_code = response.status();
-        let body: ApiResponse<Todo> = response.into_body().deserialize().await;
+        let body: Todo = response.into_body().deserialize().await;
         assert_eq!(status_code, StatusCode::OK);
         assert_eq!(
-            body.result,
+            body,
             Todo {
                 id: 2,
                 title: "todo2".to_string(),
