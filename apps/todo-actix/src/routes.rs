@@ -11,21 +11,21 @@ use actix_web::{
 };
 
 #[get("/todos")]
-async fn list_todos(app_data: Data<AppData>) -> Result<HttpResponse, ApiError> {
+pub async fn list_todos(app_data: Data<AppData>) -> Result<HttpResponse, ApiError> {
     let todos = db::list_todos(&app_data.db_pool).await?;
     let response = HttpResponse::Ok().json(todos);
     Ok(response)
 }
 
 #[get("/todos/{id}")]
-async fn get_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpResponse, ApiError> {
+pub async fn get_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpResponse, ApiError> {
     let todo = db::get_todo(&app_data.db_pool, *id).await?;
     let response = HttpResponse::Ok().json(todo);
     Ok(response)
 }
 
 #[post("/todos")]
-async fn create_todo(
+pub async fn create_todo(
     app_data: Data<AppData>,
     todo: Json<CreateTodo>,
 ) -> Result<HttpResponse, ApiError> {
@@ -35,7 +35,7 @@ async fn create_todo(
 }
 
 #[put("/todos/{id}")]
-async fn update_todo(
+pub async fn update_todo(
     app_data: Data<AppData>,
     id: Path<i64>,
     todo: Json<UpdateTodo>,
@@ -46,7 +46,7 @@ async fn update_todo(
 }
 
 #[delete("/todos/{id}")]
-async fn delete_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpResponse, ApiError> {
+pub async fn delete_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpResponse, ApiError> {
     let deleted = db::delete_todo(&app_data.db_pool, *id).await?;
     let response = HttpResponse::Ok().json(deleted);
     Ok(response)

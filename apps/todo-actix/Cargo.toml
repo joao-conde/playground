@@ -3,6 +3,11 @@ name = "todo-actix"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+lto = true
+debug = false
+opt-level = 3
+
 [dependencies]
 actix-web = { version = "4.6", default-features = false, features = ["macros"] }
 env_logger = { version = "0.11", default-features = false }
@@ -22,7 +27,43 @@ thiserror = { version = "1.0", default-features = false }
 assert_matches = { version = "1.5", default-features = false }
 serde_json = { version = "1.0", default-features = false }
 
-[profile.release]
-lto = true
-debug = false
-opt-level = 3
+[lints.rust]
+rust_2018_idioms = { level = "warn", priority = -1 }
+
+anonymous_parameters = "warn"
+bare_trait_objects = "warn"
+elided_lifetimes_in_paths = "warn"
+missing_copy_implementations = "warn"
+single_use_lifetimes = "warn"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unsafe_code = "forbid"
+unused_extern_crates = "warn"
+unused_import_braces = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -2 }
+nursery = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+dbg_macro = "warn"
+empty_structs_with_brackets = "warn"
+expect_used = "warn"
+float_cmp_const = "warn"
+get_unwrap = "warn"
+mem_forget = "warn"
+multiple_inherent_impl = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+string_to_string = "warn"
+todo = "warn"
+unnecessary_self_imports = "warn"
+unneeded_field_pattern = "warn"
+unwrap_used = "warn"
+wildcard_enum_match_arm = "warn"
+
+# suppressions
+let-and-return = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"
+option_if_let_else = "allow"

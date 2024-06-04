@@ -24,7 +24,8 @@ impl From<InternalError> for ApiError {
     fn from(err: InternalError) -> Self {
         match err {
             InternalError::Sql(sqlx::Error::RowNotFound) => Self::NotFound,
-            _ => Self::Internal,
+            InternalError::Sql(_) => Self::Internal,
+            InternalError::ParseConfig(_) => unreachable!(),
         }
     }
 }
@@ -32,8 +33,8 @@ impl From<InternalError> for ApiError {
 impl actix_web::ResponseError for ApiError {
     fn status_code(&self) -> StatusCode {
         match self {
-            ApiError::NotFound => StatusCode::NOT_FOUND,
-            ApiError::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Internal => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 

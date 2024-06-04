@@ -7,9 +7,7 @@ pub struct AppData {
 }
 
 pub fn configure_app(config: &mut ServiceConfig, db_pool: SqlitePool) {
-    let app_data = Data::new(AppData {
-        db_pool: db_pool.clone(),
-    });
+    let app_data = Data::new(AppData { db_pool });
     config
         .app_data(app_data)
         .service(routes::list_todos)
