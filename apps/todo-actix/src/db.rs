@@ -1,25 +1,8 @@
-use crate::error::InternalError;
-use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, SqlitePool};
-
-#[derive(Debug, PartialEq, Eq, Deserialize, Serialize, FromRow)]
-pub struct Todo {
-    pub id: i64,
-    pub title: String,
-    pub description: String,
-}
-
-#[derive(Debug, PartialEq, Eq, Deserialize)]
-pub struct CreateTodo {
-    pub title: String,
-    pub description: String,
-}
-
-#[derive(Debug, PartialEq, Eq, Deserialize)]
-pub struct UpdateTodo {
-    pub title: String,
-    pub description: String,
-}
+use crate::{
+    error::InternalError,
+    todo::{CreateTodo, Todo, UpdateTodo},
+};
+use sqlx::SqlitePool;
 
 pub async fn list_todos(pool: &SqlitePool) -> Result<Vec<Todo>, InternalError> {
     let todos: Vec<Todo> = sqlx::query_as!(Todo, "SELECT * FROM todos")
@@ -74,14 +57,17 @@ pub async fn delete_todo(pool: &SqlitePool, id: i64) -> Result<Todo, InternalErr
 
 #[cfg(test)]
 mod test {
-    use super::{CreateTodo, Todo, UpdateTodo};
-    use crate::error::InternalError;
+    use crate::{
+        db,
+        error::InternalError,
+        todo::{CreateTodo, Todo, UpdateTodo},
+    };
     use assert_matches::assert_matches;
     use sqlx::SqlitePool;
 
     #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn list_todos(pool: SqlitePool) {
-        let todos = super::list_todos(&pool).await.unwrap();
+        let todos = db::list_todos(&pool).await.unwrap();
         assert_eq!(
             todos,
             vec![
@@ -106,13 +92,13 @@ mod test {
 
     #[sqlx::test]
     async fn list_todos_empty(pool: SqlitePool) {
-        let todos = super::list_todos(&pool).await.unwrap();
+        let todos = db::list_todos(&pool).await.unwrap();
         assert_eq!(todos, vec![]);
     }
 
     #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn get_todo(pool: SqlitePool) {
-        let todo = super::get_todo(&pool, 2).await.unwrap();
+        let todo = db::get_todo(&pool, 2).await.unwrap();
         assert_eq!(
             todo,
             Todo {
@@ -125,13 +111,13 @@ mod test {
 
     #[sqlx::test]
     async fn get_todo_not_found(pool: SqlitePool) {
-        let err = super::get_todo(&pool, -1).await;
+        let err = db::get_todo(&pool, -1).await;
         assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
     }
 
     #[sqlx::test]
     async fn create_todo(pool: SqlitePool) {
-        let todo = super::create_todo(
+        let todo = db::create_todo(
             &pool,
             CreateTodo {
                 title: "title".to_string(),
@@ -149,7 +135,7 @@ mod test {
             }
         );
 
-        let todo = super::get_todo(&pool, 1).await.unwrap();
+        let todo = db::get_todo(&pool, 1).await.unwrap();
         assert_eq!(
             todo,
             Todo {
@@ -162,7 +148,7 @@ mod test {
 
     #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn update_todo(pool: SqlitePool) {
-        let todo = super::get_todo(&pool, 2).await.unwrap();
+        let todo = db::get_todo(&pool, 2).await.unwrap();
         assert_eq!(
             todo,
             Todo {
@@ -172,7 +158,7 @@ mod test {
             },
         );
 
-        let todo = super::update_todo(
+        let todo = db::update_todo(
             &pool,
             2,
             UpdateTodo {
@@ -191,7 +177,7 @@ mod test {
             }
         );
 
-        let todo = super::get_todo(&pool, 2).await.unwrap();
+        let todo = db::get_todo(&pool, 2).await.unwrap();
         assert_eq!(
             todo,
             Todo {
@@ -204,7 +190,7 @@ mod test {
 
     #[sqlx::test]
     async fn update_todo_not_found(pool: SqlitePool) {
-        let err = super::update_todo(
+        let err = db::update_todo(
             &pool,
             -1,
             UpdateTodo {
@@ -218,7 +204,7 @@ mod test {
 
     #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn delete_todo(pool: SqlitePool) {
-        let todo = super::get_todo(&pool, 2).await.unwrap();
+        let todo = db::get_todo(&pool, 2).await.unwrap();
         assert_eq!(
             todo,
             Todo {
@@ -228,7 +214,7 @@ mod test {
             },
         );
 
-        let todo = super::delete_todo(&pool, 2).await.unwrap();
+        let todo = db::delete_todo(&pool, 2).await.unwrap();
         assert_eq!(
             todo,
             Todo {
@@ -238,13 +224,13 @@ mod test {
             },
         );
 
-        let err = super::get_todo(&pool, 2).await;
+        let err = db::get_todo(&pool, 2).await;
         assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
     }
 
     #[sqlx::test]
     async fn delete_todo_not_found(pool: SqlitePool) {
-        let err = super::delete_todo(&pool, -1).await;
+        let err = db::delete_todo(&pool, -1).await;
         assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));
     }
 }

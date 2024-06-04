@@ -1,4 +1,5 @@
 use actix_web::{body::BoxBody, http::StatusCode, HttpResponse};
+use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
 #[derive(Debug)]
@@ -12,7 +13,7 @@ impl From<sqlx::Error> for InternalError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum ApiError {
     NotFound,
     Internal,

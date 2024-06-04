@@ -1,18 +1,30 @@
 use crate::{
     app::AppData,
-    db::{self, CreateTodo, UpdateTodo},
+    db,
     error::ApiError,
+    todo::{CreateTodo, UpdateTodo},
 };
 use actix_web::{
     delete, get, post, put,
     web::{Data, Json, Path},
     HttpResponse,
 };
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
+pub struct ApiResponse<T> {
+    pub result: T,
+    pub errors: Vec<ApiError>,
+}
 
 #[get("/todos")]
 async fn list_todos(app_data: Data<AppData>) -> Result<HttpResponse, ApiError> {
     let todos = db::list_todos(&app_data.db_pool).await?;
-    Ok(HttpResponse::Ok().json(todos))
+    let response = ApiResponse {
+        result: todos,
+        errors: vec![],
+    };
+    Ok(HttpResponse::Ok().json(response))
 }
 
 #[get("/todos/{id}")]
@@ -49,8 +61,9 @@ async fn delete_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpRespo
 #[cfg(test)]
 mod test {
     use crate::{
-        db::Todo,
-        test::actix::{make_request, BoxBodyTest},
+        routes::ApiResponse,
+        test::{make_request, BoxBodyTest},
+        todo::Todo,
     };
     use actix_web::{http::StatusCode, test};
     use sqlx::SqlitePool;
@@ -91,8 +104,37 @@ mod test {
         let response = make_request(pool, request).await;
 
         let status_code = response.status();
-        let body: Vec<Todo> = response.into_body().deserialize().await;
+        let body: ApiResponse<Vec<Todo>> = response.into_body().deserialize().await;
         assert_eq!(status_code, StatusCode::OK);
-        assert_eq!(body, vec![]);
+        assert_eq!(body.result, vec![]);
+    }
+
+    #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
+    async fn get_todo(pool: SqlitePool) {
+        let request = test::TestRequest::default().uri("/todos/2");
+        let response = make_request(pool, request).await;
+
+        let status_code = response.status();
+        let body: ApiResponse<Todo> = response.into_body().deserialize().await;
+        assert_eq!(status_code, StatusCode::OK);
+        assert_eq!(
+            body.result,
+            Todo {
+                id: 2,
+                title: "todo2".to_string(),
+                description: "description2".to_string()
+            }
+        );
+    }
+
+    #[sqlx::test]
+    async fn get_todo_not_found(pool: SqlitePool) {
+        let request = test::TestRequest::default().uri("/todos/2");
+        let response = make_request(pool, request).await;
+
+        let status_code = response.status();
+        let body = response.into_body().as_str().await;
+        assert_eq!(status_code, StatusCode::NOT_FOUND);
+        assert_eq!(body, "Not Found");
     }
 }
