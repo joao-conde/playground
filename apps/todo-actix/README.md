@@ -10,9 +10,3 @@ A sample project to try out Actix Web building a very simple TODO API.
 | PORT         | Port the server will listen at.                                           |
 | DATABASE_URL | URL pointing to a SQL database server.                                    |
 | RUST_LOG     | Level of verbosity for the logger (OFF, ERROR, WARN, INFO, DEBUG, TRACE). |
-
-## TODO
-
-- Caching
-- Metrics
-- Alerts
