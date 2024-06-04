@@ -1,7 +1,0 @@
-[package]
-name = "todo-rocket"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-rocket = { version = "0.5", default-features = false }
