@@ -2,20 +2,17 @@
 
 A sample project to try out Actix Web building a very simple TODO API.
 
-## Running
+## Configuration
 
-```bash
-cargo run --release
-```
+| Name         | Description                                                               |
+| ------------ | ------------------------------------------------------------------------- |
+| HOST         | Address of the server that serves the app.                                |
+| PORT         | Port the server will listen at.                                           |
+| DATABASE_URL | URL pointing to a SQL database server.                                    |
+| RUST_LOG     | Level of verbosity for the logger (OFF, ERROR, WARN, INFO, DEBUG, TRACE). |
 
 ## TODO
 
 - Caching
 - Metrics
 - Alerts
-
-RUST_BACKTRACE=1 RUST_LOG=actix_web=debug cargo run
-
-If you want panics and errors to both have backtraces, set RUST_BACKTRACE=1;
-If you want only errors to have backtraces, set RUST_LIB_BACKTRACE=1;
-If you want only panics to have backtraces, set RUST_BACKTRACE=1 and RUST_LIB_BACKTRACE=0
