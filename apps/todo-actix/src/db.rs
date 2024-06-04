@@ -117,7 +117,7 @@ mod test {
 
     #[sqlx::test]
     async fn create_todo(pool: SqlitePool) {
-        let todo = db::create_todo(
+        let created = db::create_todo(
             &pool,
             CreateTodo {
                 title: "title".to_string(),
@@ -127,7 +127,7 @@ mod test {
         .await
         .unwrap();
         assert_eq!(
-            todo,
+            created,
             Todo {
                 id: 1,
                 title: "title".to_string(),
@@ -136,14 +136,7 @@ mod test {
         );
 
         let todo = db::get_todo(&pool, 1).await.unwrap();
-        assert_eq!(
-            todo,
-            Todo {
-                id: 1,
-                title: "title".to_string(),
-                description: "description".to_string(),
-            }
-        );
+        assert_eq!(todo, created);
     }
 
     #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
@@ -158,7 +151,7 @@ mod test {
             },
         );
 
-        let todo = db::update_todo(
+        let updated = db::update_todo(
             &pool,
             2,
             UpdateTodo {
@@ -169,7 +162,7 @@ mod test {
         .await
         .unwrap();
         assert_eq!(
-            todo,
+            updated,
             Todo {
                 id: 2,
                 title: "title".to_string(),
@@ -178,21 +171,14 @@ mod test {
         );
 
         let todo = db::get_todo(&pool, 2).await.unwrap();
-        assert_eq!(
-            todo,
-            Todo {
-                id: 2,
-                title: "title".to_string(),
-                description: "description".to_string(),
-            },
-        );
+        assert_eq!(todo, updated);
     }
 
     #[sqlx::test]
     async fn update_todo_not_found(pool: SqlitePool) {
         let err = db::update_todo(
             &pool,
-            -1,
+            999,
             UpdateTodo {
                 title: "title".to_string(),
                 description: "description".to_string(),
@@ -214,15 +200,8 @@ mod test {
             },
         );
 
-        let todo = db::delete_todo(&pool, 2).await.unwrap();
-        assert_eq!(
-            todo,
-            Todo {
-                id: 2,
-                title: "todo2".to_string(),
-                description: "description2".to_string()
-            },
-        );
+        let deleted = db::delete_todo(&pool, 2).await.unwrap();
+        assert_eq!(todo, deleted,);
 
         let err = db::get_todo(&pool, 2).await;
         assert_matches!(err, Err(InternalError::Sql(sqlx::Error::RowNotFound)));

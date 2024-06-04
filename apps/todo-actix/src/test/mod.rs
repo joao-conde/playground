@@ -24,8 +24,7 @@ impl BoxBodyTest for BoxBody {
 
     async fn as_str(&mut self) -> String {
         let body = to_bytes(self).await.unwrap();
-        let data = std::str::from_utf8(&body).unwrap().to_string();
-        data
+        std::str::from_utf8(&body).unwrap().to_string()
     }
 }
 
