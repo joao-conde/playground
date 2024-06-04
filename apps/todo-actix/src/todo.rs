@@ -8,13 +8,13 @@ pub struct Todo {
     pub description: String,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct CreateTodo {
     pub title: String,
     pub description: String,
 }
 
-#[derive(Debug, PartialEq, Eq, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct UpdateTodo {
     pub title: String,
     pub description: String,
