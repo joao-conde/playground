@@ -4,4 +4,4 @@ DATABASE_URL = "sqlite://todos.db"
 [alias]
 ci-fmt = "fmt --all --check -- --config imports_granularity=Crate,group_imports=One"
 ci-check = "check --all --all-features"
-ci-clippy = "clippy --all --all-features -- -Dwarnings -Drust-2018-idioms -Drust-2021-compatibility"
+ci-clippy = "clippy --all --all-features -- -D warnings"

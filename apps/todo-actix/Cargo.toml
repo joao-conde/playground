@@ -26,3 +26,8 @@ thiserror = { version = "1.0", default-features = false }
 [dev-dependencies]
 assert_matches = { version = "1.5", default-features = false }
 serde_json = { version = "1.0", default-features = false }
+
+[lints.clippy]
+dbg_macro = "deny"
+expect_used = "deny"
+unwrap_used = "deny"
