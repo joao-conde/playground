@@ -13,13 +13,15 @@ use actix_web::{
 #[get("/todos")]
 async fn list_todos(app_data: Data<AppData>) -> Result<HttpResponse, ApiError> {
     let todos = db::list_todos(&app_data.db_pool).await?;
-    Ok(HttpResponse::Ok().json(todos))
+    let response = HttpResponse::Ok().json(todos);
+    Ok(response)
 }
 
 #[get("/todos/{id}")]
 async fn get_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpResponse, ApiError> {
     let todo = db::get_todo(&app_data.db_pool, *id).await?;
-    Ok(HttpResponse::Ok().json(todo))
+    let response = HttpResponse::Ok().json(todo);
+    Ok(response)
 }
 
 #[post("/todos")]
@@ -28,7 +30,8 @@ async fn create_todo(
     todo: Json<CreateTodo>,
 ) -> Result<HttpResponse, ApiError> {
     let created = db::create_todo(&app_data.db_pool, todo.into_inner()).await?;
-    Ok(HttpResponse::Ok().json(created))
+    let response = HttpResponse::Ok().json(created);
+    Ok(response)
 }
 
 #[put("/todos/{id}")]
@@ -38,13 +41,15 @@ async fn update_todo(
     todo: Json<UpdateTodo>,
 ) -> Result<HttpResponse, ApiError> {
     let updated = db::update_todo(&app_data.db_pool, *id, todo.into_inner()).await?;
-    Ok(HttpResponse::Ok().json(updated))
+    let response = HttpResponse::Ok().json(updated);
+    Ok(response)
 }
 
 #[delete("/todos/{id}")]
 async fn delete_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpResponse, ApiError> {
     let deleted = db::delete_todo(&app_data.db_pool, *id).await?;
-    Ok(HttpResponse::Ok().json(deleted))
+    let response = HttpResponse::Ok().json(deleted);
+    Ok(response)
 }
 
 #[cfg(test)]
