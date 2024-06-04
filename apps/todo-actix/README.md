@@ -10,8 +10,6 @@ cargo run --release
 
 ## TODO
 
-- HTTPS/TLS
 - Caching
 - Metrics
 - Alerts
-- use anyhow errors
