@@ -34,6 +34,6 @@ fn env_var<T: FromStr>(key: &str, default: T) -> Result<T, InternalError> {
         Err(_) => Ok(default),
         Ok(var) => var
             .parse::<T>()
-            .map_err(|_| InternalError::ParseConfig(format!("Invalid {key}"))),
+            .map_err(|_| InternalError::ParseConfig(format!("Invalid '{key}' value '{var}'"))),
     }
 }

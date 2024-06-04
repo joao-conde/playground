@@ -5,8 +5,8 @@ use todo_actix::{configure_app, Config};
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::from_env().unwrap();
-    env_logger::init();
+    let config = Config::from_env()?;
+    env_logger::builder().filter_level(config.log_level).init();
 
     let db_pool = SqlitePool::connect(&config.db_url).await?;
     sqlx::migrate!("./migrations").run(&db_pool).await?;
