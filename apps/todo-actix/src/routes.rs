@@ -48,16 +48,17 @@ async fn delete_todo(app_data: Data<AppData>, id: Path<i64>) -> Result<HttpRespo
 
 #[cfg(test)]
 mod test {
-    use crate::{app::configure_app, db::Todo, test::utils::BoxBodyTest};
-    use actix_web::{http::StatusCode, test, App};
+    use crate::{
+        db::Todo,
+        test::actix::{make_request, BoxBodyTest},
+    };
+    use actix_web::{http::StatusCode, test};
     use sqlx::SqlitePool;
 
     #[sqlx::test(fixtures("test/fixtures/todos.sql"))]
     async fn list_todos(pool: SqlitePool) {
-        let app = App::new().configure(|config| configure_app(config, pool));
-        let app = test::init_service(app).await;
-        let request = test::TestRequest::default().uri("/todos").to_request();
-        let response = test::call_service(&app, request).await;
+        let request = test::TestRequest::default().uri("/todos");
+        let response = make_request(pool, request).await;
 
         let status_code = response.status();
         let body: Vec<Todo> = response.into_body().deserialize().await;
@@ -86,10 +87,8 @@ mod test {
 
     #[sqlx::test]
     async fn list_todos_empty(pool: SqlitePool) {
-        let app = App::new().configure(|config| configure_app(config, pool));
-        let app = test::init_service(app).await;
-        let request = test::TestRequest::default().uri("/todos").to_request();
-        let response = test::call_service(&app, request).await;
+        let request = test::TestRequest::default().uri("/todos");
+        let response = make_request(pool, request).await;
 
         let status_code = response.status();
         let body: Vec<Todo> = response.into_body().deserialize().await;
