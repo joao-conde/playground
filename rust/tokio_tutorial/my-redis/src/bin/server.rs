@@ -8,8 +8,6 @@ use tokio::net::{TcpListener, TcpStream};
 
 type Db = Arc<Mutex<HashMap<String, Bytes>>>;
 
-// At "Tasks, threads, and contention" https://tokio.rs/tokio/tutorial/shared-state
-
 #[tokio::main]
 async fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").await.unwrap();
