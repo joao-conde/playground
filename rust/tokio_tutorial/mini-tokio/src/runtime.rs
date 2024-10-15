@@ -11,7 +11,7 @@ thread_local! {
 }
 
 // An equivalent to `tokio::spawn`. When entering the mini-tokio executor, the
-// `CURRENT` thread-local is set to point to that executor's channel's Send
+// `MINI_TOKIO_INSTANCE` thread-local is set to point to that executor's channel's Send
 // half. Then, spawning requires creating the `Task` harness for the given
 // `future` and pushing it into the scheduled queue.
 pub fn spawn<F>(future: F)
@@ -69,7 +69,7 @@ impl MiniTokio {
     /// on the channel signifies the task is ready to be executed. This happens
     /// when the task is first created and when its waker has been used.
     pub fn run(&self) {
-        // Set the CURRENT thread-local to point to the current executor.
+        // Set the MINI_TOKIO_INSTANCE thread-local to point to the current executor.
         //
         // Tokio uses a thread-local variable to implement `tokio::spawn`. When
         // entering the runtime, the executor stores necessary context with the
